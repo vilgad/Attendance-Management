@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="custom_card_padding">20dp</dimen>
+    <dimen name="custom_app_bar_corner_radius">25dp</dimen>
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="course_title_text_size">14sp</dimen>
+    <dimen name="course_author_text_size">13sp</dimen>
+
+    <dimen name="normalCardPadding">10dp</dimen>
+    <dimen name="normalCardMargin">4dp</dimen>
+
+    <dimen name="smallMargin">3dp</dimen>
+    <dimen name="regularMargin">5dp</dimen>
+    <dimen name="mediumMargin">8dp</dimen>
+    <dimen name="largeMargin">10dp</dimen>
+    <dimen name="xlMargin">15dp</dimen>
+
+    <dimen name="smallPadding">3dp</dimen>
+    <dimen name="regularPadding">5dp</dimen>
+    <dimen name="mediumPadding">8dp</dimen>
+    <dimen name="largePadding">10dp</dimen>
+
+    <dimen name="extraSmallTextSize">12sp</dimen>
+    <dimen name="smallTextSize">13sp</dimen>
+    <dimen name="regularTextSize">14sp</dimen>
+    <dimen name="mediumTextSize">16sp</dimen>
+    <dimen name="largeTextSize">18sp</dimen>
+
+    <dimen name="noElevation">0dp</dimen>
+    <dimen name="smallElevation">2dp</dimen>
+    <dimen name="regularElevation">4dp</dimen>
+
+    <!--    prompt Hi user-->
+    <dimen name="prompt_hi_user_text_size">24sp</dimen>
+
+<!--    prompt Lets start learning-->
+    <dimen name="prompt_start_learning_text_size">19sp</dimen>
+
+<!--    Prompt Popular Courses-->
+
+    <!--    Prompt Categories-->
+
+    <!--    Prompt Currently Learning-->
+
+    <!--    Prompt Progress-->
+
+    <!--    TextView See All-->
+
+    <!--    Recycler View-->
+    <dimen name="rv_margin_top">10dp</dimen>
+    <dimen name="rv_layout_width">0dp</dimen>
+
+<!--    Recycler View Category-->
+
+    <!--    Image Current Course Banner-->
+    <dimen name="iv_currentCourseBannerHome_height">100dp</dimen>
+    <dimen name="iv_currentCourseBannerHome_width">130dp</dimen>
+    <dimen name="iv_currentCourseBannerHome_margin">10dp</dimen>
+
+<!--    Current Course-->
+    <dimen name="tv_current_course_author_home_text_size">12sp</dimen>
+
+<!--    image button-->
+    <dimen name="image_button_min_height">48dp</dimen>
+    <dimen name="image_button_corner_radius">100dp</dimen>
+
+<!--    Search View-->
+    <dimen name="search_view_height">48dp</dimen>
+    <dimen name="search_view_width">350dp</dimen>
+
+</resources>
