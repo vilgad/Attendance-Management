@@ -1,18 +1,14 @@
 package com.example.attendancemanagement
 
 import android.Manifest
-import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Geocoder
-import android.net.Uri
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.attendancemanagement.databinding.ActivityMainBinding
@@ -26,7 +22,12 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -41,8 +42,14 @@ class MainActivity : AppCompatActivity() {
 
     private val contract = registerForActivityResult(ActivityResultContracts.TakePicture()) {
         binding.apply {
-            userClockIn.ivUserPhoto.setImageURI(null)
-            userClockIn.ivUserPhoto.setImageURI(imageViewModel.imageUri.value)
+            if (attendanceViewModel.isClockedIn.value == true) {
+                ivUserPhoto.setImageURI(null)
+            ivUserPhoto.setImageURI(imageViewModel.imageUri.value)}
+            else {
+            ivUserPhoto2.setImageURI(null)
+            ivUserPhoto2.setImageURI(imageViewModel.imageUri.value)
+            }
+
         }
     }
 
@@ -61,14 +68,51 @@ class MainActivity : AppCompatActivity() {
 
             imageUri.observe(this@MainActivity) { uri ->
                 if (uri != null) {
-                    binding.userClockIn.ivUserPhoto.setImageURI(uri)
+                    if (attendanceViewModel.isClockedIn.value == true)
+                        binding.ivUserPhoto.setImageURI(uri)
+                    else {
+                        binding.ivUserPhoto2.setImageURI(uri)
+                    }
+                }
+            }
+        }
+
+        attendanceViewModel.apply {
+            isClockedIn.observe(this@MainActivity) {
+                if (it) {
+                    checkLocationPermission()
+                    contract.launch(imageViewModel.imageUri.value!!)
+                    binding.tvTime.text = "ClockIn Time: " + getCurrentDateTime()
+                    binding.userClockIn.visibility = View.VISIBLE
+                    binding.btClock.text = "CLock Out"
+                } else {
+                    checkLocationPermission()
+                    contract.launch(imageViewModel.imageUri.value!!)
+                    binding.tvTime2.text = "ClockOut Time: " + getCurrentDateTime()
+                    binding.userClockOut.visibility = View.VISIBLE
+                    binding.btClock.text = "CLock In"
+                }
+            }
+
+            location.observe(this@MainActivity) {
+                if (it != null) {
+                    if (attendanceViewModel.isClockedIn.value == true)
+                        binding.textView2.text = it
+                    else {
+                        binding.location2.text = it
+                    }
+                } else {
+                    binding.textView2.text = "Location: Loading..."
                 }
             }
         }
 
         binding.btClock.setOnClickListener {
-//            contract.launch(imageViewModel.imageUri.value!!)
-            checkLocationPermission()
+            if (attendanceViewModel.isClockedIn.value == false) {
+                attendanceViewModel.setIsClockedIn(true)
+            } else {
+                attendanceViewModel.setIsClockedIn(false)
+            }
         }
     }
 
@@ -78,7 +122,9 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            checkGPS()
+            CoroutineScope(Dispatchers.Main).launch {
+                checkGPS()
+            }
         } else {
             ActivityCompat.requestPermissions(
                 this,
@@ -95,33 +141,34 @@ class MainActivity : AppCompatActivity() {
         val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
         builder.setAlwaysShow(true)
 
-        val result = LocationServices.getSettingsClient(this.applicationContext).checkLocationSettings(builder.build())
+        val result = LocationServices.getSettingsClient(this.applicationContext)
+            .checkLocationSettings(builder.build())
 
-        result.addOnCompleteListener {
-                task -> try {
-            val response = task.getResult(
-                ApiException::class.java
-            )
+        result.addOnCompleteListener { task ->
+            try {
+                val response = task.getResult(
+                    ApiException::class.java
+                )
 
-            getUserLocation()
-        } catch (e: ApiException) {
-            e.printStackTrace()
+                getUserLocation()
+            } catch (e: ApiException) {
+                e.printStackTrace()
 
-            when(e.statusCode) {
-                LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> try {
+                when (e.statusCode) {
+                    LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> try {
 
-                    val resolveApiException = e as ResolvableApiException
-                    resolveApiException.startResolutionForResult(this, 200)
+                        val resolveApiException = e as ResolvableApiException
+                        resolveApiException.startResolutionForResult(this, 200)
 
-                } catch (sendIntentException: IntentSender.SendIntentException) {
+                    } catch (sendIntentException: IntentSender.SendIntentException) {
 
-                }
+                    }
 
-                LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+                    LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
 
+                    }
                 }
             }
-        }
         }
     }
 
@@ -153,12 +200,17 @@ class MainActivity : AppCompatActivity() {
                     val address = geocoder.getFromLocation(location.latitude, location.longitude, 1)
 
                     val address_line = address!![0].getAddressLine(0)
-                    binding.userClockIn.textView2.text = address_line
+                    attendanceViewModel.setLocation(address_line)
                 } catch (e: IOException) {
 
                 }
             }
         }
+    }
+
+    fun getCurrentDateTime(): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return dateFormat.format(Date())
     }
 
     override fun onDestroy() {
